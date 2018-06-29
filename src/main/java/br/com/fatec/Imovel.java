@@ -1,14 +1,21 @@
 package br.com.fatec;
-public abstract class Imovel {
+
+import br.com.enuns.TipoProduto;
+
+public class Imovel extends Produto {
+	Integer registroImovel;
 	String rua;
 	Integer numero;
 	String bairro;
 	String cidade;
 	
-	public Imovel() {}
+	public Imovel(Integer registroImovel) {
+		setRegistroImovel(registroImovel);
+	}
 	
-	public Imovel(String rua, Integer numero, String bairro, String cidade) {
-		super();
+	public Imovel(TipoProduto tipoProduto,Integer registroImovel,String rua, Integer numero, String bairro, String cidade) {
+		super(tipoProduto);
+		this.registroImovel = registroImovel;
 		this.rua = rua;
 		this.numero = numero;
 		this.bairro = bairro;
@@ -37,5 +44,13 @@ public abstract class Imovel {
 	}
 	public void setCidade(String cidade) {
 		this.cidade = cidade;
+	}
+
+	public Integer getRegistroImovel() {
+		return registroImovel;
+	}
+
+	public void setRegistroImovel(Integer registroImovel) {
+		this.registroImovel = registroImovel;
 	}
 }
