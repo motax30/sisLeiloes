@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.fatec.Produto;
-import br.com.fatec.main.GerenciamentoLeiloes;
 
 public class Cliente {
 	String nome;

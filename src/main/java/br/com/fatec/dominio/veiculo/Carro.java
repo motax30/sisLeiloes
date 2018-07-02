@@ -6,8 +6,8 @@ import br.com.fatec.Veiculo;
 
 public class Carro extends Veiculo{
 
-	public Carro(TipoProduto tipoProduto,String nome, TipoCombustivel tipoCombustivel) {
-		super(tipoProduto,nome, tipoCombustivel);
+	public Carro(Integer idProduto,Integer idLeilao,TipoProduto tipoProduto,String nome, TipoCombustivel tipoCombustivel) {
+		super(idProduto, idLeilao, tipoProduto,nome, tipoCombustivel);
 	}
 
 }

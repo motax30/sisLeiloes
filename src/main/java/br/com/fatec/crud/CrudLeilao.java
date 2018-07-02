@@ -2,16 +2,22 @@ package br.com.fatec.crud;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import br.com.enuns.StatusLeilao;
 import br.com.enuns.TipoCombustivel;
 import br.com.enuns.TipoImovel;
 import br.com.enuns.TipoProduto;
 import br.com.fatec.Imovel;
+import br.com.fatec.Produto;
 import br.com.fatec.Veiculo;
 import br.com.fatec.dominio.Cliente;
+import br.com.fatec.dominio.InstituicaoFinanceira;
+import br.com.fatec.dominio.Lance;
 import br.com.fatec.dominio.imovel.Apartamento;
 import br.com.fatec.dominio.imovel.Casa;
 import br.com.fatec.dominio.imovel.Edificio;
@@ -24,9 +30,12 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 	public List<Leilao> leiloes;
 	private List<Veiculo> veiculos;
 	private List<Imovel> imoveis;
+	private List<InstituicaoFinanceira> instituicoes;
+	private Integer idLeilao;
 	
-	private static Calendar inicioLeilao;
-	private static Calendar fimLeilao;
+	private static Calendar horaInicioLeilao;
+	private static Calendar horaFimLeilao;
+	private static Calendar dataOcorrenciaLeilao;
 	private static String enderecoLeilao;
 	private static String cidadeLeilao;
 	private static String estadoLeilao;
@@ -50,12 +59,20 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 		leiloes = new ArrayList<Leilao>();
 		veiculos = new ArrayList<Veiculo>();
 		imoveis = new ArrayList<Imovel>();
+		instituicoes = new ArrayList<InstituicaoFinanceira>();
 	}
 
 	public List<Veiculo> getVeiculos() {
 		return veiculos;
 	}
 
+	public List<InstituicaoFinanceira> getInstituicoes() {
+		return instituicoes;
+	}
+
+	public void setInstituicoes(List<InstituicaoFinanceira> instituicoes) {
+		this.instituicoes = instituicoes;
+	}
 
 	public void setVeiculos(List<Veiculo> veiculos) {
 		this.veiculos = veiculos;
@@ -103,15 +120,21 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 	
 	public Object consultar(Object obj) {
 		if(obj.getClass().isInstance(new Cliente())) {
-			for (Cliente c : clientes) {
+			for (Cliente c : getClientes()) {
 				if(c.getCpf().equals(((Cliente)obj).getCpf())){
 					return c;
 				}
 			}
 		}else if(obj.getClass().isInstance(new Leilao())) {
-			for (Leilao l : leiloes) {
+			for (Leilao l : getLeiloes()) {
 				if(l.getId().equals(((Leilao)obj).getId())){
 					return l;
+				}
+			}
+		}else if(obj.getClass().isInstance(new InstituicaoFinanceira())) {
+			for (InstituicaoFinanceira instituicao:getInstituicoes()) {
+				if(instituicao.getCnpj().equals(((InstituicaoFinanceira)obj).getCnpj())){
+					return instituicao;
 				}
 			}
 		}
@@ -154,20 +177,25 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 	}
 	
 	@SuppressWarnings("resource")
-	public static String preencherDado(String solicitacaoDados) {
+	public String preencherDado(String solicitacaoDados) {
 		System.out.println(solicitacaoDados);
 		return new Scanner(System.in).next();
 	}
 	
 	@SuppressWarnings("unlikely-arg-type")
-	public void efetuarRemocao(int op,int id,Integer cpf,Integer registroImovel) {
+	public void efetuarRemocao(int op) {
 		int opcaoExcluir = 0;
+		int id = 0;
+		String numCNPJ = null;
+		int regImovel = 0;
 		switch (op) {
 		case 1:
+			System.out.println("Informe o número id para remoção: ");
+			id = new Scanner(System.in).nextInt();
 			Leilao leilao = (Leilao) consultar(new Leilao(id));
 			if(leilao!=null) {	
 				opcaoExcluir = Integer.valueOf(preencherDado("Tem certeza que deseja excluir o Leilão? 1-SIM  2-NÂO"));
-				if(op>0 && op<2) {
+				if(opcaoExcluir>0 && opcaoExcluir<2) {
 					leiloes.remove(leilao);
 				}else {
 					System.out.println("Não existe um Leilão cadastrado com esse id!");
@@ -175,10 +203,12 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 			}
 			break;
 		case 2:
+			System.out.println("Informe o número id para remoção: ");
+			id = new Scanner(System.in).nextInt();
 			Cliente cliente = (Cliente) consultar(new Cliente(id));
 			if(cliente!=null) {	
 				opcaoExcluir = Integer.valueOf(preencherDado("Tem certeza que deseja excluir o Cliente? 1-SIM  2-NÂO"));
-				if(op>0 && op<2) {
+				if(opcaoExcluir>0 && opcaoExcluir<2) {
 					clientes.remove(cliente);
 				}
 			}else {
@@ -186,10 +216,12 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 			}
 			break;
 		case 3:
+			System.out.println("Informe o número id para remoção: ");
+			id = new Scanner(System.in).nextInt();
 			Veiculo veiculo = (Veiculo) consultar(new Veiculo(id));
 			if(veiculo!=null) {	
 				opcaoExcluir = Integer.valueOf(preencherDado("Tem certeza que deseja excluir o Cliente? 1-SIM  2-NÂO"));
-				if(op>0 && op<2) {
+				if(opcaoExcluir>0 && opcaoExcluir<2) {
 					leiloes.remove(veiculo);
 				}
 			}else {
@@ -197,23 +229,43 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 			}
 			break;
 		case 4:
+			System.out.println("Informe o número id para remoção: ");
+			regImovel = new Scanner(System.in).nextInt();
 			Imovel imovel = (Imovel) consultar(new Imovel(registroImovel));
 			if(imovel!=null) {	
 				opcaoExcluir = Integer.valueOf(preencherDado("Tem certeza que deseja excluir o Cliente? 1-SIM  2-NÂO"));
-				if(op>0 && op<2) {
+				if(opcaoExcluir>0 && opcaoExcluir<2) {
 					leiloes.remove(imovel);
 				}
 			}else {
 				System.out.println("Não existe um Imóvel cadastrado com esse id!");
 			}
 			break;
+		case 5:
+			System.out.println("Informe o número CNPJ da Instituição Financeira para remoção: ");
+			numCNPJ = new Scanner(System.in).next();
+			InstituicaoFinanceira instituicao = (InstituicaoFinanceira) consultar(new InstituicaoFinanceira(numCNPJ));
+			if(instituicao!=null) {	
+				opcaoExcluir = Integer.valueOf(preencherDado("Tem certeza que deseja excluir esta Instituição? 1-SIM  2-NÂO"));
+				if(opcaoExcluir>0 && opcaoExcluir<2) {
+					getInstituicoes().remove(instituicao);
+				}
+			}else {
+				System.out.println("Não existe uma Instituição Financeira cadastrada com esse id!");
+			}
+			break;
 		}
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void efetuarAtualizacao(int op,int id,Integer cpf,Integer registroImovel) {
+	public void efetuarAtualizacao(int op) {
+		int id = 0;
+		int regImovel = 0;
+		String numCNPJ = null;
 		switch (op) {
 		case 1:
+			System.out.println("Informe o número id para alteração: ");
+			id = new Scanner(System.in).nextInt();
 			Leilao leilao = (Leilao) consultar(new Leilao(id));
 			if(leilao!=null) {	
 				atualizarLeilao(leilao);
@@ -221,16 +273,39 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 			System.out.println("Não existe um Leilão cadastrado com esse id!");
 			break;
 		case 2:
+			System.out.println("Informe o número id para alteração: ");
+			id = new Scanner(System.in).nextInt();
 			Cliente cliente = (Cliente) consultar(new Cliente(id));
 			atualizarCliente(cliente);
 			break;
 		case 3:
+			System.out.println("Informe o número id para alteração: ");
+			id = new Scanner(System.in).nextInt();
 			Veiculo veiculo = (Veiculo) consultar(new Veiculo(id));
 			atualizarVeiculo(veiculo);
 			break;
 		case 4:
+			System.out.println("Informe o número do registro de imóvel para alteração: ");
+			regImovel = new Scanner(System.in).nextInt();
 			Imovel imovel = (Imovel) consultar(new Imovel(registroImovel));
 			atualizarImovel(imovel);
+		case 5:
+			System.out.println("Informe o número do CNPJ da Instituição Financeira para alteração: ");
+			numCNPJ = new Scanner(System.in).next();
+			InstituicaoFinanceira instituicao = (InstituicaoFinanceira)consultar(new InstituicaoFinanceira(numCNPJ));
+			atualizarInstituicaoFinanceira(instituicao);
+		}
+	}
+
+	private void atualizarInstituicaoFinanceira(InstituicaoFinanceira instituicao) {
+		int pergunta;
+		pergunta = Integer.valueOf(preencherDado("Deseja alterar o número de registro do Imóvel? Informe o código: 1-SIM 2-Não"));
+		if(pergunta>0) {
+			if(pergunta<2) {
+				String nomeInstituicaoFinaceira;
+				nomeInstituicaoFinaceira = preencherDado("Preencha o novo nome da Instituição Financeira: ");
+				instituicao.setNome(nomeInstituicaoFinaceira);
+			}
 		}
 	}
 
@@ -291,12 +366,12 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 		pergunta = Integer.valueOf(preencherDado("Deseja alterar o tipo de combustível do Veiculo? Informe o código: 1-SIM 2-Não"));
 		if(pergunta>0) {
 			if(pergunta<2) {
-				alteraCombustivelVeiculo(veiculo);
+				alteraTipoCombustivelVeiculo(veiculo);
 			}
 		}
 	}
 
-	private void alteraCombustivelVeiculo(Veiculo veiculo) {
+	private void alteraTipoCombustivelVeiculo(Veiculo veiculo) {
 		String op = null;
 		op = preencherDado("Informe o novo tipo de combustível do Veículo conforme o código: "
 										+TipoCombustivel.ALCOOL.getCodigo().toString()+" - "+TipoCombustivel.ALCOOL.getDescricao()
@@ -344,7 +419,7 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 				System.out.println("Informe a nova data de ocorrência do Leilão no formato dd/mm/aaaa: ");
 				dataOcorrencia = Calendar.getInstance();
 				dataOcorrencia.setTime(new Date(new Scanner(System.in).next()));
-				leilao.setDataOcorrencia(dataOcorrencia);
+				leilao.setDataOcorrenciaFutura(dataOcorrencia);
 			}
 		}
 		pergunta = Integer.valueOf(preencherDado("Deseja alterar o endereço do Leilão? Informe o código: 1-SIM 2-Não"));
@@ -365,24 +440,117 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 		}
 	}
 	
+	public void listaLeiloes(List<Leilao>lista) {
+		StringBuffer sb = new StringBuffer();
+		if(lista.getClass().isInstance(new ArrayList<Leilao>())) {
+			Collections.sort(lista, new Comparator<Leilao>() {
+				@Override
+				public int compare(Leilao l1, Leilao l2) {
+					return l1.getDataOcorrenciaFutura().compareTo(l2.getDataOcorrenciaFutura());
+				}
+			});
+			for (Leilao leilao:leiloes) {
+				sb.append(leilao.toString()+"\n");
+			}
+		}
+		System.out.println(sb);
+	}
+	
+	public void listaClientes(List<Cliente>lista) {
+		StringBuffer sb = new StringBuffer();
+		if(lista.getClass().isInstance(new ArrayList<Cliente>())) {
+			for (Cliente cliente:clientes) {
+				sb.append(cliente.toString()+"\n");
+			}
+		}
+		System.out.println(sb);
+	}
+	
+	public void listaVeiculos(List<Veiculo>lista) {
+		StringBuffer sb = new StringBuffer();
+		if(lista.getClass().isInstance(new ArrayList<Veiculo>())) {
+			if(veiculos.size()>0) {
+				for (Veiculo veiculo: veiculos) {
+					sb.append(veiculo.toString()+"\n");
+				}
+				System.out.println(sb);
+			}else {
+				System.out.println("Nenhum veículo foi cadastrado até o momento");
+			}
+
+		}
+		
+	}
+	
+	public void listaLances(List<Lance>lista) {
+		if(lista.getClass().isInstance(new ArrayList<Lance>())) {
+			for(Leilao leilao:leiloes) {
+				for (Produto produto: leilao.getProdutos()) {
+					for (Lance lance:produto.getLancesProduto()) {
+						StringBuffer sb = new StringBuffer();
+						sb.append(lance.toString()+"\n");
+					}
+				}
+			}
+		}
+	}
+	
+	public void listaImoveis(List<Imovel>lista) {
+		StringBuffer sb = new StringBuffer();
+		if(lista.getClass().isInstance(new Imovel())) {
+			for (Imovel imovel : lista) {
+				sb.append(imovel.toString()+"\n");
+			}
+		}
+		System.out.println(sb);
+	}
+	
+	public void listaInstituicoes(List<InstituicaoFinanceira>lista) {
+		StringBuffer sb = new StringBuffer();
+		if(lista.getClass().isInstance(new Imovel())) {
+			for (InstituicaoFinanceira instituicao:instituicoes) {
+				sb.append(instituicao.toString()+"\n");
+			}
+		}
+		System.out.println(sb);
+	}
+	
 	public void efetuarCadatro(int op) {
 		switch (op) {
 		case 1:
-			cadastrarLeilao();
+			if(getInstituicoes().size()>0) {
+				listaInstituicoes(getInstituicoes());
+				cadastrarLeilao();
+			}
+			
 			break;
 		case 2:
 			cadastrarCliente();
 			break;
 		case 3:
-			cadastrarVeiculo();
+			if(getLeiloes().size()>0) {
+				System.out.println("LISTAGEM DE TODOS OS LEILÕES CADASTRADOS\n");
+				listaLeiloes(getLeiloes());
+				cadastrarVeiculo();
+			}else {
+				System.out.println("Para cadastrar um veículo é necessário que se tenha criado pelo menos um Leilão.");
+			}
 			break;
 		case 4:
-			cadastrarImovel();
+			if(imoveis.size()>0) {
+				System.out.println("LISTAGEM DE TODOS OS LEILÕES CADASTRADOS");
+				listaImoveis(imoveis);
+				cadastrarImovel();
+			}else {
+				System.out.println("Para cadastrar um imóvel é necessário que se tenha criado pelo menos um Leilão.");
+			}
+			break;
 		}
 	}
 
 	private void cadastrarImovel() {
 		int opImovel = 0;
+		idLeilao = Integer.valueOf(preencherDado("Informe o id do Leilão que será associado a este Produto: "));
 		System.out.println("Informe o Tipo de Imóvel conforme código: "
 					+TipoImovel.APARTAMENTO.getCod()+" - "+TipoImovel.APARTAMENTO
 					+TipoImovel.CASA.getCod()+" - "+TipoImovel.CASA
@@ -397,19 +565,19 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 		Imovel imovel = null;
 		switch(opImovel) {
 			case 1:
-				imovel = new Apartamento(TipoProduto.IMOVEL,registroImovel, ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
+				imovel = new Apartamento(getProximoId(new Imovel()),idLeilao,TipoProduto.IMOVEL,registroImovel, ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
 				cadastrar(imovel);
 				break;
 			case 2:
-				imovel = new Casa(TipoProduto.IMOVEL, ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
+				imovel = new Casa(getProximoId(new Imovel()),idLeilao,TipoProduto.IMOVEL, ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
 				cadastrar(imovel);
 				break;
 			case 3:
-				imovel = new Edificio(TipoProduto.IMOVEL,registroImovel, ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
+				imovel = new Edificio(getProximoId(new Imovel()),idLeilao,TipoProduto.IMOVEL,registroImovel, ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
 				cadastrar(imovel);
 				break;
 			case 4:
-				imovel = new Terreno(TipoProduto.IMOVEL, registroImovel,ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
+				imovel = new Terreno(getProximoId(new Imovel()),idLeilao,TipoProduto.IMOVEL, registroImovel,ruaImovel, numeroImovel, bairroImovel, cidadeImovel);
 				cadastrar(imovel);
 				break;
 		}
@@ -417,6 +585,7 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 
 	@SuppressWarnings("resource")
 	private void cadastrarVeiculo() {
+		idLeilao = Integer.valueOf(preencherDado("Informe o id do Leilão que será associado a este Produto: "));
 		nomeVeiculo = preencherDado("Informe o nome do veiculo: ");
 		System.out.println("Informe tipo de combustível conforme código: 1 - "+TipoCombustivel.ALCOOL
 				+"2 - "+TipoCombustivel.GASOLINA+"3 - "+TipoCombustivel.FLEX+": ");
@@ -435,7 +604,7 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 		default:
 			break;
 		}
-		Veiculo veiculo = new Veiculo(TipoProduto.VEICULO, nomeVeiculo, tipoCombustivel);
+		Veiculo veiculo = new Veiculo(getProximoId(new Veiculo()),idLeilao,TipoProduto.VEICULO, nomeVeiculo, tipoCombustivel);
 		cadastrar(veiculo);
 	}
 
@@ -445,20 +614,25 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 		cadastrar(cliente);
 	}
 
+	@SuppressWarnings("static-access")
 	private void cadastrarLeilao() {
 		String variavel = null;
-		variavel = preencherDado("Informe a data de início para o Leilão no formato dd/mm/aaaa:");
-		inicioLeilao = Calendar.getInstance();
-		inicioLeilao.setTime(new Date(variavel));
-		variavel = preencherDado("Informe a data de término para o Leilão no formato dd/mm/aaaa:");
-		fimLeilao = Calendar.getInstance();
-		fimLeilao.setTime(new Date(variavel));
+		variavel = preencherDado("Informe a data de ocorrência do Leilão no formato dd/mm/aaaa:");
+		dataOcorrenciaLeilao = Calendar.getInstance();
+		dataOcorrenciaLeilao.setTime(new Date(variavel));
+		variavel = preencherDado("Informe a hora de início do Leilão no formato hh:mm  ");
+		horaInicioLeilao = Calendar.getInstance();
+		horaInicioLeilao.set(dataOcorrenciaLeilao.YEAR, dataOcorrenciaLeilao.MONTH, dataOcorrenciaLeilao.DATE, Integer.valueOf(variavel.substring(0, 1)).intValue(), Integer.valueOf(variavel.substring(3,4)).intValue());
+		variavel = preencherDado("Informe a hora de término do Leilão no formato hh:mm : ");
+		horaFimLeilao = Calendar.getInstance();
+		horaFimLeilao.set(dataOcorrenciaLeilao.YEAR, dataOcorrenciaLeilao.MONTH, dataOcorrenciaLeilao.DATE, Integer.valueOf(variavel.substring(0, 1)).intValue(), Integer.valueOf(variavel.substring(3,4)).intValue());
 		variavel = preencherDado("Informe a endereço de realização do Leilão: ");
 		enderecoLeilao = variavel;
 		cidadeLeilao = preencherDado("Informe a cidade de realização do Leilão: ");
 		estadoLeilao = preencherDado("Informe o estado(UF) de realização do Leilão: ");
 		int id = getProximoId(new Leilao());
-		Leilao leilao = new Leilao(id,inicioLeilao, fimLeilao, enderecoLeilao, cidadeLeilao, estadoLeilao);
+		Leilao leilao = new Leilao(id,horaInicioLeilao, horaFimLeilao, dataOcorrenciaLeilao, enderecoLeilao, cidadeLeilao, estadoLeilao);
+		leilao.setStatus(StatusLeilao.EM_ABERTO);
 		cadastrar(leilao);
 	}
 
@@ -481,5 +655,33 @@ public class CrudLeilao implements ICrudLeilao<Object> {
 			numero++;
 		}
 		return numero;
+	}
+
+	public void efetuarConsulta(int opcao, int idConsulta) {
+		switch (opcao) {
+		case 1:
+			break;
+
+		default:
+			break;
+		}	
+	}
+
+	public void detalharLeilao(int id) {
+		StringBuilder sb = new StringBuilder();
+		Leilao leilao = (Leilao) consultar(new Leilao(id));
+		if(leilao!=null) {
+			System.out.println(leilao.toString());
+		}
+	}
+	
+	public void detalharProdutoDeLeilao(Integer idLeilao,Integer idProduto) {
+		Leilao leilao = (Leilao)consultar(new Leilao(idLeilao));
+		for (Produto p:leilao.getProdutos()) {
+			if(p.getId().equals(idProduto)) {
+				System.out.println(p.toString());
+				break;
+			}
+		}
 	}
 }

@@ -10,8 +10,8 @@ public class Edificio extends Imovel{
 		super(registroImovel);
 	}
 
-	public Edificio(TipoProduto tipoProduto,Integer registroImovel,String rua, Integer numero, String bairro, String cidade) {
-		super(tipoProduto, registroImovel, rua, numero, bairro, cidade);
+	public Edificio(Integer idProduto,Integer idLeilao,TipoProduto tipoProduto,Integer registroImovel,String rua, Integer numero, String bairro, String cidade) {
+		super(idProduto,idLeilao,tipoProduto, registroImovel, rua, numero, bairro, cidade);
 	}
 
 }

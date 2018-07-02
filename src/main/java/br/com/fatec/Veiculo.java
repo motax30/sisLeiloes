@@ -4,12 +4,11 @@ import br.com.enuns.TipoCombustivel;
 import br.com.enuns.TipoProduto;
 
 public class Veiculo extends Produto{
-	Integer id;
 	String nome;
 	TipoCombustivel tipoCombustivel;
 	
-	public Veiculo(TipoProduto tipoProduto,String nome, TipoCombustivel tipoCombustivel) {
-		super(tipoProduto);
+	public Veiculo(Integer idProduto,Integer idLeilao,TipoProduto tipoProduto,String nome, TipoCombustivel tipoCombustivel) {
+		super(idProduto,idLeilao,tipoProduto);
 		setNome(nome);
 		setTipoCombustivel(tipoCombustivel);
 	}
@@ -47,6 +46,10 @@ public class Veiculo extends Produto{
 	public void setTipoCombustivel(TipoCombustivel tipoCombustivel) {
 		this.tipoCombustivel = tipoCombustivel;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "Veiculo [id=" + id + ", nome=" + nome + ", tipoCombustivel=" + tipoCombustivel + "]";
+	}
 	
 }

@@ -13,14 +13,18 @@ public class Imovel extends Produto {
 		setRegistroImovel(registroImovel);
 	}
 	
-	public Imovel(TipoProduto tipoProduto,Integer registroImovel,String rua, Integer numero, String bairro, String cidade) {
-		super(tipoProduto);
+	public Imovel(Integer idProduto,Integer idLeilao,TipoProduto tipoProduto,Integer registroImovel,String rua, Integer numero, String bairro, String cidade) {
+		super(idProduto,idLeilao,tipoProduto);
 		this.registroImovel = registroImovel;
 		this.rua = rua;
 		this.numero = numero;
 		this.bairro = bairro;
 		this.cidade = cidade;
 	}
+	public Imovel() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String getRua() {
 		return rua;
 	}

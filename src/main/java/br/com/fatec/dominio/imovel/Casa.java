@@ -9,8 +9,8 @@ public class Casa extends Imovel{
 		super(registroImovel);
 	}
 
-	public Casa(TipoProduto tipoProduto,String rua, Integer numero, String bairro, String cidade) {
-		super(tipoProduto, numero, rua, numero, bairro, cidade);
+	public Casa(Integer idProduto,Integer idLeilao,TipoProduto tipoProduto,String rua, Integer numero, String bairro, String cidade) {
+		super(idProduto,idLeilao,tipoProduto, numero, rua, numero, bairro, cidade);
 	}
 
 }

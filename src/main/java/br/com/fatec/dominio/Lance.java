@@ -55,4 +55,14 @@ public class Lance {
 	public void setCliente(Cliente cliente) {
 		this.cliente = cliente;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Lance [id=" + id + ", IdProduto=" + produto.getId() + ", CPF do Cliente=" + cliente.getCpf() + ", Nome do Cliente=" + cliente.getNome()
+				+ ", valorOfertado=" + valorOfertado
+				+ ", valorAtual=" + valorAtual + "]";
+	}
+	
+	
 }

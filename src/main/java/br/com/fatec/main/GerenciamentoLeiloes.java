@@ -1,22 +1,12 @@
 package br.com.fatec.main;
 
+import java.io.LineNumberInputStream;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Scanner;
 
 import br.com.enuns.TipoCombustivel;
-import br.com.enuns.TipoImovel;
-import br.com.enuns.TipoProduto;
-import br.com.fatec.Imovel;
-import br.com.fatec.Veiculo;
 import br.com.fatec.crud.CrudLeilao;
-import br.com.fatec.dominio.Cliente;
-import br.com.fatec.dominio.imovel.Apartamento;
-import br.com.fatec.dominio.imovel.Casa;
-import br.com.fatec.dominio.imovel.Edificio;
-import br.com.fatec.dominio.imovel.Leilao;
 
 public class GerenciamentoLeiloes {
 	public static CrudLeilao crud;
@@ -44,22 +34,10 @@ public class GerenciamentoLeiloes {
 	private static String bairroImovel;
 	private static String cidadeImovel;
 	
-	public GerenciamentoLeiloes() {
-		crud = new CrudLeilao();
-	}
-	
-	private static void preencherDado(String solicitacaoDados,Object variavelAAtualizar) {
-		System.out.println(solicitacaoDados);
-		if(variavelAAtualizar.getClass().isInstance(Integer.class)) {
-			variavelAAtualizar = new Scanner(System.in).nextInt();
-		}
-	}
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
-		GerenciamentoLeiloes gerenciamentoLeiloes = new GerenciamentoLeiloes();
-		
-		
+		crud = new CrudLeilao();
 		do {
 //			// muda o LookAndFeel para parecer com uma aplicacao nativa
 //			try {
@@ -78,41 +56,45 @@ public class GerenciamentoLeiloes {
 			System.out.println("SISTEMA DE CONTROLE DE LEILÕES \n\n"
 					+ "------------------------------Menu Principal------------------------------\n\n"
 					+ "Selecione a opção deseja informando o código conforme abaixo\n"
-					+ "1 - Leilao\n  2 - Cliente\n  3 - Veiculo\n 4 - Imovel 5 - SAIR\n\n");
+					+ "1 - Leilao\n  2 - Cliente\n  3 - Veiculo\n 4 - Imovel\n 5 - Intituição Financeira\n 6 - Listar Leiloes \n "
+					+ "7 - Detalhar um Leilão Específico 8 -  Detalhar produto de Leilão 9 - SAIR\n\n");
 			opcao = new Scanner(System.in).nextInt();
+			if(opcao<1){
+				System.out.println("Opção inválida insira um código válido!");
+			}else if(opcao<6) {
 			System.out.println("Insira o codigo da operacao desejada, conforme abaixo:\n"
 					+ "1 - Cadastrar\n 2 - Atualizar\n 3 - Remover\n 4 - Consultar\n\n");
 			operacao = new Scanner(System.in).nextInt();
-			if(opcao<1){
-				System.out.println("Opção inválida insira um código válido!");
-			}else if(opcao<5) {
 				switch (operacao) {
 				case 1:
-					crud.efetuarCadatro(1);
+					crud.efetuarCadatro(opcao);
 					break;
 				case 2:
-					System.out.println("Informe o id do Leilão que deseja alterar");
-					int id = new Scanner(System.in).nextInt();
-					crud.efetuarAtualizacao(opcao,id,null,null);
+					crud.efetuarAtualizacao(opcao);
 					break;
 				case 3:
-					System.out.println("Informe o id do Leilão que deseja remover");
-					int idRemover = new Scanner(System.in).nextInt();
-					crud.efetuarRemocao(opcao,idRemover,null,null);
-					break;
-				case 4:
-//					crud.efetuarConsulta
+					crud.efetuarRemocao(opcao);
 					break;
 				}
+			}else {
+				if(crud.getLeiloes().size()>0) {
+					switch (opcao) {
+					case 6:
+							System.out.println("LISTAGEM DOS LEILÕES CADASTRADOS ORDENADOS POR DATA DE OCORRÊNCIA");
+							crud.listaLeiloes(crud.getLeiloes());
+							break;	
+					case 7:
+						int id = Integer.valueOf(crud.preencherDado("Informe o id do Leilão para detalhamento: "));
+						crud.detalharLeilao(id);
+					case 8:
+						int idLeilao = Integer.valueOf(crud.preencherDado("Informe o id do Leilão para detalhamento: "));
+						int idProduto = Integer.valueOf(crud.preencherDado("Informe o id do Produto do Leilão para detalhamento: "));
+						crud.detalharProdutoDeLeilao(idLeilao, idProduto);
+					}	
+				}else {
+					System.out.println("Não existem leilões cadastrados, tente novamente!");
+				}
 			}
-		} while (opcao<5);
-	}
-	
-	public BigInteger getNumerador() {
-		return numerador;
-	}
-
-	public void setNumerador(BigInteger numerador) {
-		this.numerador = numerador;
+		} while (opcao<9);
 	}
 }
